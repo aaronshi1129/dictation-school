@@ -1,0 +1,450 @@
+
+<html><head><base href=".">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background: white;
+    padding: 20px;
+  }
+
+  .container {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    max-width: 800px;
+    width: 90%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    text-align: center;
+  }
+
+  .sentence {
+    font-size: 1.2rem;
+    margin: 20px 0;
+    line-height: 1.6;
+    color: #2c3e50;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s, background 0.2s;
+    margin: 5px;
+  }
+
+  button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+  }
+
+  .number {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .input-area {
+    margin: 20px 0;
+    width: 100%;
+  }
+
+  #userInput {
+    width: 90%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+
+  .feedback {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    font-weight: bold;
+    min-height: 24px;
+  }
+
+  .correct {
+    color: #27ae60;
+  }
+
+  .incorrect {
+    color: #e74c3c;
+  }
+
+  .disclaimer {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  .score-display {
+    font-size: 1.1rem;
+    color: #34495e;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  #correctScore {
+    color: #27ae60;
+    font-weight: bold;
+  }
+
+  #percentageScore {
+    color: #2980b9;
+    font-weight: bold;
+  }
+
+  .answer-display {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    color: #2c3e50;
+    display: none;
+  }
+
+  .answer-display.show {
+    display: block;
+  }
+
+  .pokemon-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .pokemon-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: modalPop 0.3s ease-out;
+  }
+
+  @keyframes modalPop {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .pokemon-image {
+    margin: 20px 0;
+    max-width: 200px;
+    height: auto;
+    animation: bounce 1s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .continue-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s, background 0.2s;
+    margin-top: 20px;
+  }
+
+  .continue-btn:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Listening Dictation (Proverbs)</h1>
+    <p class="subtitle">Finish 5 tasks correctly and earn a Pokemon!</p>
+  <div class="score-display">
+    Score: <span id="correctScore">0</span> correct / <span id="totalAttempts">0</span> attempts 
+    (<span id="percentageScore">0</span>%)
+  </div>
+  <div class="button-group">
+    <button onclick="speakSentence()">
+      <span>🔊 Read Aloud</span>
+    </button>
+  </div>
+  <div class="input-area">
+    <input type="text" 
+           id="userInput" 
+           placeholder="Type what you hear..."
+           onkeypress="if(event.key === 'Enter') checkAnswer()">
+  </div>
+  <div id="feedback" class="feedback"></div>
+  <div id="answerDisplay" class="answer-display"></div>
+  <div class="button-group">
+    <button onclick="generateSentence()">Get New Sentence</button>
+    <button onclick="checkAnswer()">Check Answer</button>
+    <button onclick="showAnswer()">Show Answer</button>
+  </div>
+  <p class="disclaimer">
+    The sentences do not represent statistical facts. They are only used to practice English listening, writing, and numbers.
+  </p>
+  <p class="disclaimer" style="margin-bottom: 0; font-style: normal;">
+    Author: Aaron Shi. Released in 2024. Last update on November 23, 2024
+  </p>
+</div>
+
+<script>
+const POKEMON_COUNT = 151; // Number of original Pokemon
+let fiveCorrectCounter = 0; // Track progress towards 5 correct answers
+const templates = [  
+  "Our math class starts at 8:00 a.m. every Monday.",  
+  "The science lab is open every Wednesday afternoon.",  
+  "We have English lessons three times a week.",  
+  "My school day ends at 3:30 p.m.",  
+  "PE is scheduled for Friday mornings.",  
+  "The art class begins right after lunch on Tuesdays.",  
+  "We have assembly every Monday morning at 8:30 a.m.",  
+  "The library closes at 5:00 p.m. every weekday.",  
+  "The school bell rings at 8:00 a.m. to start the day.",  
+  "Our history class is right before lunch.",  
+  "I always bring my notebook to every class.",  
+  "We do group activities every Friday in geography class.",  
+  "I usually sit in the front row for better focus.",  
+  "I prefer taking notes by hand rather than on a laptop.",  
+  "I read for 20 minutes in the library during break time.",  
+  "We take a short quiz at the end of every math lesson.",  
+  "I always finish my homework before class.",  
+  "I review my lessons every night before going to bed.",  
+  "Our teacher checks attendance at the beginning of each class.",  
+  "I participate in the school debate club every Thursday.",  
+  "Can you help me find a book on world history?",  
+  "Could you explain this math problem to me?",  
+  "Where is the counselor's office located?",  
+  "Can I borrow a pencil from you, please?",  
+  "Could you repeat the instructions for the assignment?",  
+  "Where is the computer lab?",  
+  "Can you help me carry these books to the library?",  
+  "Who should I ask for permission to leave early?",  
+  "May I sit next to you during the group project?",  
+  "Could you help me understand this chemistry formula?",  
+  "Is there a tutorial session after school?",  
+  "Can you lend me your notes for yesterday's class?",  
+  "Where do I submit this homework assignment?",  
+  "Can you help me practice for the spelling test?",  
+  "How do I register for the music club?",  
+  "Do you know when the next school holiday is?",  
+  "Can I speak with the principal?",  
+  "What time does the cafeteria open?",  
+  "Is there a teacher available for extra help?",  
+  "Who can I contact about missing textbooks?",  
+  "Can you help me prepare for the final exams?",  
+  "How do I access the school's online learning platform?",  
+  "May I ask for an extension on this assignment?",  
+  "Who is the teacher for the advanced math class?",  
+  "Can I schedule a meeting with my academic advisor?",  
+  "How do I sign up for sports practice?",  
+  "Is there a quiet place to study after school?",  
+  "Can you help me fix my computer login issue?",  
+  "What are the requirements to join the science club?"  
+];
+
+let correctAnswers = 0;
+let totalAttempts = 0;
+
+let currentSentence = '';
+
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateSentence() {
+  const template = templates[Math.floor(Math.random() * templates.length)];
+  let number;
+  
+  // Generate factually accurate random numbers within reasonable ranges
+  if (template.includes("social media")) {
+    number = getRandomNumber(120, 170);
+  } else if (template.includes("blinks")) {
+    number = getRandomNumber(25000, 30000);
+  } else if (template.includes("adult laughs")) {
+    number = getRandomNumber(15, 20);
+  } else if (template.includes("heart beats")) {
+    number = getRandomNumber(95000, 105000);
+  } else if (template.includes("emails")) {
+    number = getRandomNumber(100, 140);
+  } else if (template.includes("gallons of water")) {
+    number = getRandomNumber(300, 340);
+  } else if (template.includes("watching television")) {
+    number = getRandomNumber(180, 220);
+  } else if (template.includes("commuting")) {
+    number = getRandomNumber(45, 60);
+  } else if (template.includes("check their smartphones")) {
+    number = getRandomNumber(80, 110);
+  } else if (template.includes("calories")) {
+    number = getRandomNumber(2000, 3000);
+  } else if (template.includes("child laughs")) {
+    number = getRandomNumber(250, 350);
+  } else if (template.includes("steps")) {
+    number = getRandomNumber(7000, 8000);
+  } else {
+    // Default random number for other cases
+    number = getRandomNumber(10, 120);
+  }
+
+  currentSentence = template.replace("NUMBER", number);
+  
+  // Clear the input and feedback
+  document.getElementById("userInput").value = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("answerDisplay").classList.remove("show");
+  
+  // Automatically speak the new sentence
+  speakSentence();
+}
+
+function speakSentence() {
+  if (!currentSentence) {
+    currentSentence = document.getElementById("sentenceDisplay").textContent;
+  }
+  
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(currentSentence);
+  
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+  }
+  
+  window.speechSynthesis.speak(utterance);
+}
+
+function checkAnswer() {
+  const userInput = document.getElementById("userInput").value.trim().toLowerCase();
+  const correctAnswer = currentSentence.toLowerCase();
+  const feedbackElement = document.getElementById("feedback");
+  
+  totalAttempts++;
+  
+  if (userInput === correctAnswer) {
+    correctAnswers++;
+    fiveCorrectCounter++;
+    feedbackElement.textContent = "🎉 Excellent! That's correct!";
+    feedbackElement.className = "feedback correct";
+    
+    // Check if user has completed 5 correct answers
+    if (fiveCorrectCounter === 5) {
+      const randomPokemonId = Math.floor(Math.random() * POKEMON_COUNT) + 1;
+      showPokemonReward(randomPokemonId);
+      fiveCorrectCounter = 0; // Reset counter
+    }
+  } else {
+    feedbackElement.textContent = "Keep trying! Listen again and type what you hear.";
+    feedbackElement.className = "feedback incorrect";
+  }
+  
+  // Update score display
+  document.getElementById("correctScore").textContent = correctAnswers;
+  document.getElementById("totalAttempts").textContent = totalAttempts;
+  document.getElementById("percentageScore").textContent = 
+    Math.round((correctAnswers / totalAttempts) * 100);
+}
+
+function showAnswer() {
+  const answerDisplay = document.getElementById("answerDisplay");
+  answerDisplay.textContent = currentSentence;
+  answerDisplay.classList.add("show");
+  
+  // Hide the answer after 5 seconds
+  setTimeout(() => {
+    answerDisplay.classList.remove("show");
+  }, 5000);
+}
+
+function showPokemonReward(pokemonId) {
+  // Create and show modal
+  const modal = document.createElement('div');
+  modal.className = 'pokemon-modal';
+  modal.innerHTML = `
+    <div class="pokemon-modal-content">
+      <h2>Congratulations! 🎉</h2>
+      <p>You've successfully finished five listening dictation tasks. You've won this Pokemon!</p>
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png" 
+           alt="Pokemon reward" 
+           class="pokemon-image"
+           width="200" 
+           height="200">
+      <button onclick="closePokemonModal()" class="continue-btn">Continue Practicing</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closePokemonModal() {
+  const modal = document.querySelector('.pokemon-modal');
+  if (modal) {
+    modal.remove();
+    generateSentence(); // Generate new sentence after closing modal
+  }
+}
+
+speechSynthesis.onvoiceschanged = function() {
+  window.speechSynthesis.getVoices();
+};
+
+window.onload = generateSentence;
+</script>
+</body></html>
